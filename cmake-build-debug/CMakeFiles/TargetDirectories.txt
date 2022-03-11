@@ -1,3 +1,0 @@
-/home/user/CLionProjects/fh-ppr-mandelbrot/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/user/CLionProjects/fh-ppr-mandelbrot/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/user/CLionProjects/fh-ppr-mandelbrot/cmake-build-debug/CMakeFiles/fh_ppr_mandelbrot.dir
