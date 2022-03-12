@@ -9,9 +9,12 @@
 using namespace std;
 using Complex = std::complex<double>;
 
-int w = 500, h = 500;
+#define NUM_THREADS 1
+
+bool writeToDisk = false;
+int w = 1024, h = 1024;
 double min_x = -2, min_y = -1, max_x = 1, max_y = 1;
-int maxIterations = 255;
+int maxIterations = 100;
 
 int mandelbrot(Complex c) {
     double zReal = c.real();
@@ -123,16 +126,27 @@ void readCommandLineInput() {
 int main() {
 //    readCommandLineInput();
 
-    std::vector<unsigned char> imageData(h * w * 3);
+    double wtime = omp_get_wtime();
+    omp_set_num_threads(NUM_THREADS);
 
+    std::vector<unsigned char> imageData(h * w * 3);
     int k = 0;
+
+#pragma omp parallel for shared(imageData) firstprivate(k) collapse(2)
     for (int px = 0; px < w; px++) {
         for (int py = 0; py < h; py++) {
             calcPix(px, py, imageData, k);
-            k += 3;
+            k = px + py + 3;
         }
     }
-    plot(imageData, "./output.tga");
+
+    if (writeToDisk) {
+        plot(imageData, "./output.tga");
+    }
+
+    wtime = omp_get_wtime() - wtime;
+    cout << "\n";
+    cout << "  Time = " << wtime << " seconds.\n";
 
     return 0;
 }
