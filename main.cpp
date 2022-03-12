@@ -4,49 +4,103 @@
 #include <string>
 #include <complex>
 #include "tga.h"
+#include <tuple>
 
 using namespace std;
 using Complex = std::complex<double>;
 
-int w, h;
-int min_x, min_y, max_x, max_y;
-int maxIterations;
-
-Complex scale(int px, int py, Complex c) {
-    int width = max_x - min_x;
-    int height = max_y - min_y;
-    Complex aux(c.real() / w * width * min_x, c.imag() / h * height + min_y);
-    return aux;
-}
+int w = 500, h = 500;
+double min_x = -2, min_y = -1, max_x = 1, max_y = 1;
+int maxIterations = 255;
 
 int mandelbrot(Complex c) {
-    Complex z(0);
-    int currentIteration = 0;
+    double zReal = c.real();
+    double zImag = c.imag();
 
-    while (abs(z) <= 2.0 && currentIteration < maxIterations) {
-        z = z * z + c;
-        currentIteration++;
+    for (int i = 0; i < maxIterations; ++i) {
+        double r2 = zReal * zReal;
+        double i2 = zImag * zImag;
+
+        if (r2 + i2 > 4.0) return i;
+
+        zImag = 2.0 * zReal * zImag + c.imag();
+        zReal = r2 - i2 + c.real();
     }
 
-    return currentIteration;
+    return maxIterations;
 }
 
-Complex normalizeToViewRectangle(int px, int py) {
-    Complex c(px, py);
-    return c = scale(px, py, c);
+std::tuple<double, double> normalizeToViewRectangle(int px, int py) {
+    double dx = (max_x - min_x) / (w - 1);
+    double dy = (max_y - min_y) / (h - 1);
+
+    return std::make_tuple(dx, dy);
 }
 
-void plot(std::vector<int> &colors) {
+void plot(std::vector<unsigned char> &colors, const char *filename) {
+    tga::TGAImage s;
+    s.width = w;
+    s.height = h;
+    s.bpp = 24;
+    s.type = 1;
+    s.imageData = colors;
 
+    tga::saveTGA(s, filename);
 }
 
-void calcPix(int px, int py, std::vector<int> &colors, int idx) {
-    Complex c = normalizeToViewRectangle(px, py);
-    colors[idx] = mandelbrot(c);
-    plot(colors);
+unsigned char *getColor(int mandel, unsigned char rgb[]) {
+    if (mandel >= maxIterations) {
+        rgb[0] = '100';
+        rgb[1] = '100';
+        rgb[2] = '100';
+    } else if (mandel > maxIterations * 0.9) {
+        rgb[0] = '0';
+        rgb[1] = '0';
+        rgb[2] = '0';
+    } else if (mandel > maxIterations * 0.7) {
+        rgb[0] = '0';
+        rgb[1] = '0';
+        rgb[2] = '0';
+    } else if (mandel > maxIterations * 0.5) {
+        rgb[0] = '0';
+        rgb[1] = '0';
+        rgb[2] = '0';
+    } else if (mandel > maxIterations * 0.3) {
+        rgb[0] = '0';
+        rgb[1] = '0';
+        rgb[2] = '0';
+    } else if (mandel > maxIterations * 0.1) {
+        rgb[0] = '100';
+        rgb[1] = '100';
+        rgb[2] = '100';
+    } else {
+        rgb[0] = '255';
+        rgb[1] = '255';
+        rgb[2] = '255';
+    }
+
+    return rgb;
 }
 
-int main() {
+void calcPix(int px, int py, std::vector<unsigned char> &colors, int idx) {
+    auto tuple = normalizeToViewRectangle(px, py);
+
+    double x = min_x + py * std::get<0>(tuple); // current real value
+    double y = max_y - px * std::get<1>(tuple); // current imaginary value
+
+    Complex res(x, y);
+
+    int mandel = mandelbrot(res);
+
+    unsigned char color[3];
+    getColor(mandel, color);
+
+    colors[idx] = color[0];
+    colors[idx + 1] = color[1];
+    colors[idx + 2] = color[2];
+}
+
+void readCommandLineInput() {
     cout << "Please enter the height and width of the target picture: (h, w)" << endl;
     cin >> h >> w;
 
@@ -64,16 +118,21 @@ int main() {
     cin >> maxIterations;
 
     cout << "maxIterations: " << maxIterations << endl;
+}
 
-    std::vector<int> imageData(h * w);
+int main() {
+//    readCommandLineInput();
+
+    std::vector<unsigned char> imageData(h * w * 3);
 
     int k = 0;
     for (int px = 0; px < w; px++) {
         for (int py = 0; py < h; py++) {
             calcPix(px, py, imageData, k);
-            k++;
+            k += 3;
         }
     }
+    plot(imageData, "./output.tga");
 
     return 0;
 }
