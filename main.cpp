@@ -10,8 +10,9 @@ using namespace std;
 using Complex = std::complex<double>;
 
 #define NUM_THREADS 1
+#define IS_TESTED true
+#define WRITE_TO_DISK false
 
-bool writeToDisk = false;
 int w = 1024, h = 1024;
 double min_x = -2, min_y = -1, max_x = 1, max_y = 1;
 int maxIterations = 100;
@@ -123,11 +124,16 @@ void readCommandLineInput() {
     cout << "maxIterations: " << maxIterations << endl;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 //    readCommandLineInput();
 
+    int threadNum = NUM_THREADS;
+    if (argc > 1) {
+        threadNum = atoi(argv[1]);
+    }
+
     double wtime = omp_get_wtime();
-    omp_set_num_threads(NUM_THREADS);
+    omp_set_num_threads(threadNum);
 
     std::vector<unsigned char> imageData(h * w * 3);
     int k = 0;
@@ -140,13 +146,18 @@ int main() {
         }
     }
 
-    if (writeToDisk) {
+    if (WRITE_TO_DISK) {
         plot(imageData, "./output.tga");
     }
 
     wtime = omp_get_wtime() - wtime;
-    cout << "\n";
-    cout << "  Time = " << wtime << " seconds.\n";
+
+    if (IS_TESTED) {
+        cout << wtime << endl;
+    } else {
+        cout << "Elapsed time: " << wtime << "seconds" << endl;
+
+    }
 
     return 0;
 }
