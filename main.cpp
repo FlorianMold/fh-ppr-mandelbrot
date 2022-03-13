@@ -11,11 +11,11 @@ using Complex = std::complex<double>;
 
 #define NUM_THREADS 1
 #define IS_TESTED true
-#define WRITE_TO_DISK false
+#define WRITE_TO_DISK true
 
 int w = 1024, h = 1024;
 double min_x = -2, min_y = -1, max_x = 1, max_y = 1;
-int maxIterations = 100;
+int maxIterations = 255;
 
 int mandelbrot(Complex c) {
     double zReal = c.real();
@@ -54,33 +54,70 @@ void plot(std::vector<unsigned char> &colors, const char *filename) {
 
 unsigned char *getColor(int mandel, unsigned char rgb[]) {
     if (mandel >= maxIterations) {
-        rgb[0] = '100';
-        rgb[1] = '100';
-        rgb[2] = '100';
+//        black
+        rgb[0] = ((unsigned char) 0);
+        rgb[1] = ((unsigned char) 0);
+        rgb[2] = ((unsigned char) 0);
     } else if (mandel > maxIterations * 0.9) {
-        rgb[0] = '0';
-        rgb[1] = '0';
-        rgb[2] = '0';
+//        red
+        rgb[0] = ((unsigned char) 255);
+        rgb[1] = ((unsigned char) 0);
+        rgb[2] = ((unsigned char) 0);
     } else if (mandel > maxIterations * 0.7) {
-        rgb[0] = '0';
-        rgb[1] = '0';
-        rgb[2] = '0';
+//        light red
+        rgb[0] = ((unsigned char) 255);
+        rgb[1] = ((unsigned char) 160);
+        rgb[2] = ((unsigned char) 122);
     } else if (mandel > maxIterations * 0.5) {
-        rgb[0] = '0';
-        rgb[1] = '0';
-        rgb[2] = '0';
+//        orange
+        rgb[0] = ((unsigned char) 255);
+        rgb[1] = ((unsigned char) 165);
+        rgb[2] = ((unsigned char) 0);
     } else if (mandel > maxIterations * 0.3) {
-        rgb[0] = '0';
-        rgb[1] = '0';
-        rgb[2] = '0';
+//        yellow
+        rgb[0] = ((unsigned char) 255);
+        rgb[1] = ((unsigned char) 255);
+        rgb[2] = ((unsigned char) 0);
+    } else if (mandel > maxIterations * 0.2) {
+//        light green
+        rgb[0] = ((unsigned char) 144);
+        rgb[1] = ((unsigned char) 238);
+        rgb[2] = ((unsigned char) 144);
     } else if (mandel > maxIterations * 0.1) {
-        rgb[0] = '100';
-        rgb[1] = '100';
-        rgb[2] = '100';
+//        green
+        rgb[0] = ((unsigned char) 0);
+        rgb[1] = ((unsigned char) 128);
+        rgb[2] = ((unsigned char) 0);
+    } else if (mandel > maxIterations * 0.05) {
+//        light cyan
+        rgb[0] = ((unsigned char) 224);
+        rgb[1] = ((unsigned char) 255);
+        rgb[2] = ((unsigned char) 255);
+    } else if (mandel > maxIterations * 0.04) {
+//        cyan
+        rgb[0] = ((unsigned char) 0);
+        rgb[1] = ((unsigned char) 255);
+        rgb[2] = ((unsigned char) 255);
+    } else if (mandel > maxIterations * 0.03) {
+//        light blue
+        rgb[0] = ((unsigned char) 173);
+        rgb[1] = ((unsigned char) 216);
+        rgb[2] = ((unsigned char) 230);
+    } else if (mandel > maxIterations * 0.02) {
+//        blue
+        rgb[0] = ((unsigned char) 0);
+        rgb[1] = ((unsigned char) 0);
+        rgb[2] = ((unsigned char) 255);
+    } else if (mandel > maxIterations * 0.01) {
+//        magenta
+        rgb[0] = ((unsigned char) 238);
+        rgb[1] = ((unsigned char) 130);
+        rgb[2] = ((unsigned char) 238);
     } else {
-        rgb[0] = '255';
-        rgb[1] = '255';
-        rgb[2] = '255';
+//        light magenta
+        rgb[0] = ((unsigned char) 255);
+        rgb[1] = ((unsigned char) 0);
+        rgb[2] = ((unsigned char) 255);
     }
 
     return rgb;
@@ -99,9 +136,11 @@ void calcPix(int px, int py, std::vector<unsigned char> &colors, int idx) {
     unsigned char color[3];
     getColor(mandel, color);
 
-    colors[idx] = color[0];
-    colors[idx + 1] = color[1];
-    colors[idx + 2] = color[2];
+    int location = (px + py * h) * 3;
+
+    colors[location] = color[0];
+    colors[location + 1] = color[1];
+    colors[location + 2] = color[2];
 }
 
 void readCommandLineInput() {
@@ -141,7 +180,7 @@ int main(int argc, char *argv[]) {
     std::vector<unsigned char> imageData(h * w * 3);
     int k = 0;
 
-#pragma omp parallel for shared(imageData) firstprivate(k) collapse(2)
+#pragma omp parallel for shared(imageData) firstprivate(k) collapse(2) shared(w, h) default(none)
     for (int px = 0; px < w; px++) {
         for (int py = 0; py < h; py++) {
             calcPix(px, py, imageData, k);
