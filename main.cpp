@@ -125,11 +125,14 @@ void readCommandLineInput() {
 }
 
 int main(int argc, char *argv[]) {
-//    readCommandLineInput();
-
     int threadNum = NUM_THREADS;
-    if (argc > 1) {
+    if (argc > 2) {
         threadNum = atoi(argv[1]);
+        maxIterations = atoi(argv[2]);
+    }
+
+    if (!IS_TESTED) {
+        readCommandLineInput();
     }
 
     double wtime = omp_get_wtime();
@@ -155,8 +158,7 @@ int main(int argc, char *argv[]) {
     if (IS_TESTED) {
         cout << wtime << endl;
     } else {
-        cout << "Elapsed time: " << wtime << "seconds" << endl;
-
+        cout << "Elapsed time: " << wtime << " seconds" << endl;
     }
 
     return 0;
