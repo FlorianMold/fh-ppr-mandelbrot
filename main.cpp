@@ -10,7 +10,7 @@ using namespace std;
 using Complex = std::complex<double>;
 
 #define NUM_THREADS 1
-#define IS_TESTED true
+#define IS_TESTED false
 #define WRITE_TO_DISK true
 
 int w = 1024, h = 1024;
@@ -89,33 +89,33 @@ unsigned char *getColor(int mandel, unsigned char rgb[]) {
         rgb[1] = ((unsigned char) 128);
         rgb[2] = ((unsigned char) 0);
     } else if (mandel > maxIterations * 0.05) {
-//        light cyan
-        rgb[0] = ((unsigned char) 224);
-        rgb[1] = ((unsigned char) 255);
-        rgb[2] = ((unsigned char) 255);
-    } else if (mandel > maxIterations * 0.04) {
 //        cyan
         rgb[0] = ((unsigned char) 0);
         rgb[1] = ((unsigned char) 255);
         rgb[2] = ((unsigned char) 255);
+    } else if (mandel > maxIterations * 0.04) {
+//        orange
+        rgb[0] = ((unsigned char) 255);
+        rgb[1] = ((unsigned char) 106);
+        rgb[2] = ((unsigned char) 0);
     } else if (mandel > maxIterations * 0.03) {
-//        light blue
-        rgb[0] = ((unsigned char) 173);
-        rgb[1] = ((unsigned char) 216);
-        rgb[2] = ((unsigned char) 230);
+//        light red 255
+        rgb[0] = ((unsigned char) 230);
+        rgb[1] = ((unsigned char) 76);
+        rgb[2] = ((unsigned char) 76);
     } else if (mandel > maxIterations * 0.02) {
+//        red
+        rgb[0] = ((unsigned char) 250);
+        rgb[1] = ((unsigned char) 0);
+        rgb[2] = ((unsigned char) 0);
+    } else if (mandel > maxIterations * 0.01) {
+//        light blue
+        rgb[0] = ((unsigned char) 70);
+        rgb[1] = ((unsigned char) 97);
+        rgb[2] = ((unsigned char) 250);
+    } else {
 //        blue
         rgb[0] = ((unsigned char) 0);
-        rgb[1] = ((unsigned char) 0);
-        rgb[2] = ((unsigned char) 255);
-    } else if (mandel > maxIterations * 0.01) {
-//        magenta
-        rgb[0] = ((unsigned char) 238);
-        rgb[1] = ((unsigned char) 130);
-        rgb[2] = ((unsigned char) 238);
-    } else {
-//        light magenta
-        rgb[0] = ((unsigned char) 255);
         rgb[1] = ((unsigned char) 0);
         rgb[2] = ((unsigned char) 255);
     }
@@ -123,7 +123,7 @@ unsigned char *getColor(int mandel, unsigned char rgb[]) {
     return rgb;
 }
 
-void calcPix(int px, int py, std::vector<unsigned char> &colors, int idx) {
+void calcPix(int px, int py, std::vector<unsigned char> &colors) {
     auto tuple = normalizeToViewRectangle(px, py);
 
     double x = min_x + py * std::get<0>(tuple); // current real value
@@ -178,13 +178,11 @@ int main(int argc, char *argv[]) {
     omp_set_num_threads(threadNum);
 
     std::vector<unsigned char> imageData(h * w * 3);
-    int k = 0;
 
-#pragma omp parallel for shared(imageData) firstprivate(k) collapse(2) shared(w, h) default(none)
+#pragma omp parallel for shared(imageData, w, h) collapse(2) default(none) schedule(static)
     for (int px = 0; px < w; px++) {
         for (int py = 0; py < h; py++) {
-            calcPix(px, py, imageData, k);
-            k = px + py + 3;
+            calcPix(px, py, imageData);
         }
     }
 
