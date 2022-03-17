@@ -1,5 +1,7 @@
 # Getting started
 
+![Mandelbrot](mandelbrot.png)
+
 Execute the program and fill out the questions:
 
 For example:
