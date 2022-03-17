@@ -81,8 +81,14 @@ directories.forEach(dirName => {
     const directory = `${resultDirectory}/${dirName}`;
     readFiles(directory)
         .then(files => {
+            const sorted = files
+                .filter(value => value.filename !== 'result.csv')
+                .sort((f1, f2) =>
+                    +f1.filename.slice(8, -4).toString() - +f2.filename.slice(8, -4).toString()
+                );
+
             const mergedFile = [];
-            files.filter(value => value.filename !== 'result.csv').forEach((item, fileIndex) => {
+            sorted.forEach((item, fileIndex) => {
                 const content = item.contents
                     .split('\n')
                     .slice(0, -1);
