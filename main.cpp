@@ -126,8 +126,8 @@ unsigned char *getColor(int mandel, unsigned char rgb[]) {
 void calcPix(int px, int py, std::vector<unsigned char> &colors) {
     auto tuple = normalizeToViewRectangle(px, py);
 
-    double x = min_x + py * std::get<0>(tuple); // current real value
-    double y = max_y - px * std::get<1>(tuple); // current imaginary value
+    double x = min_x + px * std::get<0>(tuple); // current real value
+    double y = max_y - py * std::get<1>(tuple); // current imaginary value
 
     Complex res(x, y);
 
